@@ -42,3 +42,8 @@
 - Asked: Commit and push the styling and dark-mode changes. Changed: Prepared the app and request log for commit. Result: See Git history and remote for commit and push status.
 - Asked: Keep map controls and attribution below the header and add a nicer satellite map. Changed: Isolated the map stacking context and added Esri World Imagery as the default with a streets layer option. Result: Changes implemented; live map tiles and scrolling have not been tested in a browser.
 - Asked: Commit and push the map changes. Changed: Prepared the map update and request log for commit. Result: See Git history and remote for commit and push status.
+- Asked: Use red icon-font symbols for crane, roofing, and concrete hazards. Changed: Replaced hazard text and dots with accessible Font Awesome icons and compact red badges. Result: Implemented; icon loading and appearance have not been tested in a browser.
+- Asked: Use a shovel for concrete and a house for roofing. Changed: Selected a shovel icon for concrete; roofing already uses a house. Result: Icon choice updated; browser appearance has not been tested.
+- Asked: Make hazard icons smaller, place them to the right of the time, and simplify the crane. Changed: Made each hazard row inline with smaller badges and replaced the crane graphic with a simple crane silhouette. Result: Implemented; browser appearance has not been tested.
+- Asked: Commit and push the hazard icon changes. Changed: Prepared the app and request log for commit. Result: See Git history and remote for commit and push status.
+- Asked: Retry the interrupted commit and push. Changed: Checked Git status and retried the hazard icon commit and push. Result: See Git history and remote for final status.

@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
     * { box-sizing: border-box; }
     :root { color-scheme: light; --page: #f3f5f8; --surface: #fff; --text: #20242b; --muted: #626e7b; --border: #dce2e9; --accent: #2456bd; --shadow: 0 8px 28px rgba(25, 43, 66, .1); }
@@ -46,6 +47,10 @@
     .hour p { margin: .85rem 0; font-size: .88rem; line-height: 1.45; }
     .hour p:first-child, .hour h3 { font-weight: 800; font-size: 1rem; }
     .hour h3 { margin: 0 0 1rem; }
+    .hazard-row { display: flex; align-items: center; gap: .3rem; white-space: nowrap; }
+    .hazard-time { margin-right: .2rem; font-weight: 700; }
+    .hazard-icon { display: inline-flex; align-items: center; justify-content: center; width: 1.3rem; height: 1.3rem; border-radius: .3rem; background: #fff0f0; color: #bd1428; font-size: .7rem; }
+    .hazard-icon svg { width: 14px; height: 14px; }
     button:focus-visible, summary:focus-visible, input:focus-visible, .hours:focus-visible { outline: 3px solid #6196ff; outline-offset: 2px; }
     @media (max-width: 480px) { header { grid-template-columns: 1fr auto; } .location { grid-column: 1 / -1; grid-row: 2; } .map-select { font-size: .8rem; } }
   </style>
@@ -187,14 +192,38 @@
             if (time.slice(0, 10) !== date || !configured || !validWorkHours || !inWorkHours(time)) return;
             const wind = data.hourly.wind_speed_10m?.[i], rain = data.hourly.precipitation_probability?.[i], temp = data.hourly.temperature_2m?.[i];
             const issues = [];
-            if (wind != null && Math.round(wind * 0.621371) >= Number(limits[0].value)) issues.push('🔴 Crane');
-            if (rain != null && rain > Number(limits[1].value)) issues.push('🔴 Roofing');
-            if (temp != null && temp * 9 / 5 + 32 < Number(limits[2].value)) issues.push('🔴 Concrete');
+            if (wind != null && Math.round(wind * 0.621371) >= Number(limits[0].value)) issues.push(['Crane', 'fa-truck-ramp-box']);
+            if (rain != null && rain > Number(limits[1].value)) issues.push(['Roofing', 'fa-house']);
+            if (temp != null && temp * 9 / 5 + 32 < Number(limits[2].value)) issues.push(['Concrete', 'fa-shovel']);
             if (!issues.length) return;
             found = true;
             const hour = Number(time.slice(11, 13));
             const line = document.createElement('p');
-            line.textContent = `${hour % 12 || 12}:00 ${hour < 12 ? 'AM' : 'PM'} ${issues.join(' ')}`;
+            line.className = 'hazard-row';
+            const timeLabel = document.createElement('span');
+            timeLabel.className = 'hazard-time';
+            timeLabel.textContent = `${hour % 12 || 12}:00 ${hour < 12 ? 'AM' : 'PM'}`;
+            line.appendChild(timeLabel);
+            issues.forEach(([label, icon]) => {
+              const badge = document.createElement('span');
+              badge.className = 'hazard-icon';
+              badge.title = `${label} hazard`;
+              badge.setAttribute('role', 'img');
+              badge.setAttribute('aria-label', `${label} hazard`);
+              const symbol = document.createElement('i');
+              symbol.className = `fa-solid ${icon}`;
+              symbol.setAttribute('aria-hidden', 'true');
+              if (label === 'Concrete' || label === 'Crane') {
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('viewBox', '0 0 24 24');
+                svg.setAttribute('width', '20');
+                svg.setAttribute('height', '20');
+                svg.setAttribute('aria-hidden', 'true');
+                svg.innerHTML = label === 'Concrete' ? '<path d="M17 2l5 5-2 2-2-2-7 7 1 1-1 4-6 4-4-4 4-6 4-1 1 1 7-7-2-2z" fill="currentColor"/>' : '<path d="M3 4h18v2H3zm4 2h2v14H7zm10 0h2v7h-2zm0 7h2v2a2 2 0 1 1-4 0h2a1 1 0 0 0 1 1v-1h-1zM4 20h8v2H4z" fill="currentColor"/>';
+                badge.appendChild(svg);
+              } else badge.appendChild(symbol);
+              line.appendChild(badge);
+            });
             card.appendChild(line);
           });
           if (!found) {
