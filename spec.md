@@ -1,5 +1,15 @@
 # Jobsite Weather Planner
 
+## Current implementation and outstanding work
+
+The app now has a persistent Safeweather header, settings dropdown, and a 5:3 navigable map with a centered pin and selection button. It requests the user's location, falls back to Provo, and displays city and ZIP when available or coordinates otherwise. OpenStreetMap supplies the map and location lookup.
+
+Selecting a location loads seven days of hourly Open-Meteo data in the location's time zone. The app shows the selected coordinates, time zone, retrieval time, and loading errors. Date tabs select a day, and a horizontal row displays 12-hour time, temperature in °F, rain probability, and wind speed in mph. A second horizontal row shows each day's hazard hours and affected activities.
+
+Settings allow the user to change work hours and hazard thresholds. The ending hour is included, equal start and end times show all hours, and an end earlier than the start is rejected. Current hazard rules are rounded wind speed at or above 3 mph for crane, rain probability above 20% for roofing, and unrounded temperature below 49°F for concrete; users can adjust these thresholds. These checks are not a complete jobsite safety assessment.
+
+Still to decide or verify: browser and mobile behavior; the intended crane rounding and equality rules; a neutral state for missing values (the current hazard summary can appear clear when data is missing); daylight saving and overnight shifts; gusts, condition colors, precipitation backgrounds, and activity summaries; and the NWS comparison and explicit exclusions. The initial design notes below include proposals that have not all been implemented and should be read alongside this current-status section.
+
 ## Purpose
 Click a jobsite on a map and get a 7-day forecast showing which days are safe for the work that weather can stop: crane lifts, concrete pours, and roofing.
 
