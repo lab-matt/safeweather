@@ -38,3 +38,5 @@
 - Asked: Update scope.md to reflect progress. Changed: Added `00_planning/scope.md` summarizing implemented features and remaining decisions; no scope.md previously existed. Result: Current app behavior and outstanding verification are documented.
 - Asked: Update spec.md instead. Changed: Added current implementation, hazard rules, and outstanding work to spec.md while preserving original design and validation notes. Result: The spec now distinguishes current behavior from earlier proposals.
 - Asked: Commit and push the documentation updates. Changed: Prepared the updated specification and request log for commit. Result: See Git history and remote for commit and push status.
+- Asked: Style the app using the screenshot in 04_look and add a moon dark-mode toggle left of Settings. Changed: Added rounded navigation, blue forecast cards, typography, responsive theme colors, and a persistent moon toggle. Result: Styling and toggle implemented; browser testing has not been performed.
+- Asked: Commit and push the styling and dark-mode changes. Changed: Prepared the app and request log for commit. Result: See Git history and remote for commit and push status.
