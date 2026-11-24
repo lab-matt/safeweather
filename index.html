@@ -16,6 +16,8 @@
     .settings p { margin: 0 0 .75rem; }
     .settings label { display: block; margin-top: .75rem; }
     .settings input { display: block; width: 100%; margin-top: .25rem; }
+    .settings input[aria-invalid="true"] { border: 2px solid #b00020; }
+    .error { color: #b00020; }
     main { padding: 1rem; }
     .hours { display: flex; gap: .75rem; overflow-x: scroll; padding-bottom: 1rem; }
     .days { display: flex; gap: .5rem; overflow-x: auto; padding: .5rem 0; }
@@ -34,7 +36,8 @@
       <summary>Settings</summary>
       <div class="settings">
         <label>Work starts <input id="work-start" type="time" value="00:00"></label>
-        <label>Work ends <input id="work-end" type="time" value="00:00"></label>
+        <label>Work ends <input id="work-end" type="time" value="00:00" aria-describedby="work-end-error"></label>
+        <p id="work-end-error" class="error" role="alert" hidden>Work end time must be at or after the start time.</p>
         <p>Safety limits will be defined later.</p>
         <label>Crane wind speed <input type="number" disabled></label>
         <label>Minimum chance of rain <input type="number" disabled></label>
@@ -72,6 +75,7 @@
         const row = document.getElementById('hours');
         const start = document.getElementById('work-start');
         const end = document.getElementById('work-end');
+        const endError = document.getElementById('work-end-error');
         const dayTabs = document.getElementById('forecast-days');
         let selectedDay = data.hourly.time[0]?.slice(0, 10);
         [...new Set(data.hourly.time.map(time => time.slice(0, 10)))].forEach(date => {
@@ -85,12 +89,15 @@
         function render() {
         dayTabs.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.date === selectedDay)));
         row.replaceChildren();
+        const invalidRange = Boolean(start.value && end.value && end.value < start.value);
+        end.setAttribute('aria-invalid', String(invalidRange));
+        endError.hidden = !invalidRange;
         if (!start.value || !end.value) {
           status.textContent = 'Choose both a start and an end time.';
           return;
         }
-        if (end.value < start.value) {
-          status.textContent = 'Work end time must be at or after the start time.';
+        if (invalidRange) {
+          status.textContent = '';
           return;
         }
         let count = 0;
