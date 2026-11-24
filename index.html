@@ -89,11 +89,15 @@
           status.textContent = 'Choose both a start and an end time.';
           return;
         }
+        if (end.value < start.value) {
+          status.textContent = 'Work end time must be at or after the start time.';
+          return;
+        }
         let count = 0;
         data.hourly.time.forEach((time, i) => {
           if (time.slice(0, 10) !== selectedDay) return;
           const hour = time.slice(11, 16);
-          const included = start.value === end.value || (start.value < end.value ? hour >= start.value && hour <= end.value : hour >= start.value || hour <= end.value);
+          const included = start.value === end.value || (hour >= start.value && hour <= end.value);
           if (!included) return;
           count++;
           const card = document.createElement('article');
