@@ -48,6 +48,8 @@
     <div class="days" id="forecast-days" aria-label="Forecast day"></div>
     <p id="forecast-status" role="status">Loading saved test data…</p>
     <div class="hours" id="hours" tabindex="0" role="region" aria-label="Hourly forecast; scroll horizontally"></div>
+    <h2>Hazards</h2>
+    <div class="hours" id="hazards" tabindex="0" role="region" aria-label="Hazards; scroll horizontally"></div>
   </main>
   <script>
     async function showForecast() {
@@ -56,6 +58,17 @@
         const response = await fetch('02_validation/open_meteo_provo_84606_2026-11-23.json');
         if (!response.ok) throw new Error('Unable to load data');
         const data = await response.json();
+        const hazards = document.getElementById('hazards');
+        [...new Set(data.hourly.time.map(time => time.slice(0, 10)))].forEach(date => {
+          const card = document.createElement('article');
+          card.className = 'hour';
+          const heading = document.createElement('h3');
+          heading.textContent = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(date + 'T12:00:00Z'));
+          const placeholder = document.createElement('p');
+          placeholder.textContent = 'Hazard criteria not yet set';
+          card.append(heading, placeholder);
+          hazards.appendChild(card);
+        });
         const row = document.getElementById('hours');
         const start = document.getElementById('work-start');
         const end = document.getElementById('work-end');
