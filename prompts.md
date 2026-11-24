@@ -40,3 +40,5 @@
 - Asked: Commit and push the documentation updates. Changed: Prepared the updated specification and request log for commit. Result: See Git history and remote for commit and push status.
 - Asked: Style the app using the screenshot in 04_look and add a moon dark-mode toggle left of Settings. Changed: Added rounded navigation, blue forecast cards, typography, responsive theme colors, and a persistent moon toggle. Result: Styling and toggle implemented; browser testing has not been performed.
 - Asked: Commit and push the styling and dark-mode changes. Changed: Prepared the app and request log for commit. Result: See Git history and remote for commit and push status.
+- Asked: Keep map controls and attribution below the header and add a nicer satellite map. Changed: Isolated the map stacking context and added Esri World Imagery as the default with a streets layer option. Result: Changes implemented; live map tiles and scrolling have not been tested in a browser.
+- Asked: Commit and push the map changes. Changed: Prepared the map update and request log for commit. Result: See Git history and remote for commit and push status.
