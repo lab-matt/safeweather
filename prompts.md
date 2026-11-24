@@ -20,3 +20,4 @@
 - Asked: Remove the day name from forecast cards and commit. Changed: Removed weekday labels from cards; the day selector remains. Result: Change prepared for commit; browser testing has not been performed.
 - Asked: Include the ending hour in the forecast columns. Changed: Made the work end time inclusive for daytime and overnight filters. Result: The ending hour is included when it matches an hourly reading; browser testing has not been performed.
 - Asked: Commit and push the ending-hour fix, then replace the day dropdown with tabs and commit and push that separately. Changed: Recorded the requested two-stage workflow. Result: See Git history and remote for the commits and push status.
+- Asked: Replace the day dropdown with tabs. Changed: Added scrollable date buttons with a visible selected state, retaining work-hour filtering. Result: Implemented; browser interaction has not been tested.

@@ -18,6 +18,9 @@
     .settings input { display: block; width: 100%; margin-top: .25rem; }
     main { padding: 1rem; }
     .hours { display: flex; gap: .75rem; overflow-x: scroll; padding-bottom: 1rem; }
+    .days { display: flex; gap: .5rem; overflow-x: auto; padding: .5rem 0; }
+    .days button { white-space: nowrap; }
+    .days button[aria-pressed="true"] { font-weight: bold; border-bottom: 3px solid currentColor; }
     .hour { flex: 0 0 10rem; border: 1px solid #aaa; border-radius: 1.5rem; padding: 1rem; }
     .hour p { margin: .75rem 0; }
     @media (max-width: 480px) { header { grid-template-columns: 1fr auto; } .location { grid-column: 1 / -1; grid-row: 2; } }
@@ -42,7 +45,7 @@
   <main>
     <h2>Hourly forecast</h2>
     <p>Saved test forecast for Provo, Utah · November 23–29, 2026 · America/Denver</p>
-    <label>Forecast day <select id="forecast-day"></select></label>
+    <div class="days" id="forecast-days" aria-label="Forecast day"></div>
     <p id="forecast-status" role="status">Loading saved test data…</p>
     <div class="hours" id="hours" tabindex="0" role="region" aria-label="Hourly forecast; scroll horizontally"></div>
   </main>
@@ -56,14 +59,18 @@
         const row = document.getElementById('hours');
         const start = document.getElementById('work-start');
         const end = document.getElementById('work-end');
-        const daySelect = document.getElementById('forecast-day');
+        const dayTabs = document.getElementById('forecast-days');
+        let selectedDay = data.hourly.time[0]?.slice(0, 10);
         [...new Set(data.hourly.time.map(time => time.slice(0, 10)))].forEach(date => {
-          const option = document.createElement('option');
-          option.value = date;
-          option.textContent = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(new Date(date + 'T12:00:00Z'));
-          daySelect.appendChild(option);
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.dataset.date = date;
+          button.textContent = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(date + 'T12:00:00Z'));
+          button.addEventListener('click', () => { selectedDay = date; render(); });
+          dayTabs.appendChild(button);
         });
         function render() {
+        dayTabs.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.date === selectedDay)));
         row.replaceChildren();
         if (!start.value || !end.value) {
           status.textContent = 'Choose both a start and an end time.';
@@ -71,7 +78,7 @@
         }
         let count = 0;
         data.hourly.time.forEach((time, i) => {
-          if (time.slice(0, 10) !== daySelect.value) return;
+          if (time.slice(0, 10) !== selectedDay) return;
           const hour = time.slice(11, 16);
           const included = start.value === end.value || (start.value < end.value ? hour >= start.value && hour <= end.value : hour >= start.value || hour <= end.value);
           if (!included) return;
@@ -94,7 +101,6 @@
         }
         start.addEventListener('input', render);
         end.addEventListener('input', render);
-        daySelect.addEventListener('change', render);
         render();
       } catch (error) {
         status.textContent = 'Could not load the saved test data. Open the page through a local web server or GitHub Pages.';
