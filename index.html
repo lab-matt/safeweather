@@ -73,7 +73,7 @@
         data.hourly.time.forEach((time, i) => {
           if (time.slice(0, 10) !== daySelect.value) return;
           const hour = time.slice(11, 16);
-          const included = start.value === end.value || (start.value < end.value ? hour >= start.value && hour < end.value : hour >= start.value || hour < end.value);
+          const included = start.value === end.value || (start.value < end.value ? hour >= start.value && hour <= end.value : hour >= start.value || hour <= end.value);
           if (!included) return;
           count++;
           const card = document.createElement('article');
