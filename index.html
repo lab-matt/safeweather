@@ -38,10 +38,10 @@
         <label>Work starts <input id="work-start" type="time" value="00:00"></label>
         <label>Work ends <input id="work-end" type="time" value="00:00" aria-describedby="work-end-error"></label>
         <p id="work-end-error" class="error" role="alert" hidden>Work end time must be at or after the start time.</p>
-        <p>Safety limits will be defined later.</p>
-        <label>Crane wind speed <input type="number" disabled></label>
-        <label>Minimum chance of rain <input type="number" disabled></label>
-        <label>Minimum temperature for concrete <input type="number" disabled></label>
+        <p>Hazard thresholds</p>
+        <label>Crane wind speed (mph) <input id="wind-limit" type="number" min="0" value="3"></label>
+        <label>Rain chance (%) <input id="rain-limit" type="number" min="0" max="100" value="20"></label>
+        <label>Minimum concrete temperature (°F) <input id="temp-limit" type="number" value="49"></label>
       </div>
     </details>
   </header>
@@ -62,16 +62,7 @@
         if (!response.ok) throw new Error('Unable to load data');
         const data = await response.json();
         const hazards = document.getElementById('hazards');
-        [...new Set(data.hourly.time.map(time => time.slice(0, 10)))].forEach(date => {
-          const card = document.createElement('article');
-          card.className = 'hour';
-          const heading = document.createElement('h3');
-          heading.textContent = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(date + 'T12:00:00Z'));
-          const placeholder = document.createElement('p');
-          placeholder.textContent = 'Hazard criteria not yet set';
-          card.append(heading, placeholder);
-          hazards.appendChild(card);
-        });
+        const limits = ['wind-limit', 'rain-limit', 'temp-limit'].map(id => document.getElementById(id));
         const row = document.getElementById('hours');
         const start = document.getElementById('work-start');
         const end = document.getElementById('work-end');
@@ -87,6 +78,41 @@
           dayTabs.appendChild(button);
         });
         function render() {
+        hazards.replaceChildren();
+        const validWorkHours = Boolean(start.value && end.value && end.value >= start.value);
+        const inWorkHours = time => {
+          const hour = time.slice(11, 16);
+          return start.value === end.value || (hour >= start.value && hour <= end.value);
+        };
+        const configured = limits.every(input => input.value !== '' && input.validity.valid);
+        [...new Set(data.hourly.time.map(time => time.slice(0, 10)))].forEach(date => {
+          const card = document.createElement('article');
+          card.className = 'hour';
+          const heading = document.createElement('h3');
+          heading.textContent = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(date + 'T12:00:00Z'));
+          card.appendChild(heading);
+          let found = false;
+          data.hourly.time.forEach((time, i) => {
+            if (time.slice(0, 10) !== date || !configured || !validWorkHours || !inWorkHours(time)) return;
+            const wind = data.hourly.wind_speed_10m?.[i], rain = data.hourly.precipitation_probability?.[i], temp = data.hourly.temperature_2m?.[i];
+            const issues = [];
+            if (wind != null && Math.round(wind * 0.621371) >= Number(limits[0].value)) issues.push('🔴 Crane');
+            if (rain != null && rain > Number(limits[1].value)) issues.push('🔴 Roofing');
+            if (temp != null && temp * 9 / 5 + 32 < Number(limits[2].value)) issues.push('🔴 Concrete');
+            if (!issues.length) return;
+            found = true;
+            const hour = Number(time.slice(11, 13));
+            const line = document.createElement('p');
+            line.textContent = `${hour % 12 || 12}:00 ${hour < 12 ? 'AM' : 'PM'} ${issues.join(' ')}`;
+            card.appendChild(line);
+          });
+          if (!found) {
+            const message = document.createElement('p');
+            message.textContent = !validWorkHours ? 'Set valid work hours in Settings' : configured ? 'No hazards identified during work hours' : 'Set valid limits in Settings';
+            card.appendChild(message);
+          }
+          hazards.appendChild(card);
+        });
         dayTabs.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.date === selectedDay)));
         row.replaceChildren();
         const invalidRange = Boolean(start.value && end.value && end.value < start.value);
@@ -104,7 +130,7 @@
         data.hourly.time.forEach((time, i) => {
           if (time.slice(0, 10) !== selectedDay) return;
           const hour = time.slice(11, 16);
-          const included = start.value === end.value || (hour >= start.value && hour <= end.value);
+          const included = inWorkHours(time);
           if (!included) return;
           count++;
           const card = document.createElement('article');
@@ -125,6 +151,7 @@
         }
         start.addEventListener('input', render);
         end.addEventListener('input', render);
+        limits.forEach(input => input.addEventListener('input', render));
         render();
       } catch (error) {
         status.textContent = 'Could not load the saved test data. Open the page through a local web server or GitHub Pages.';

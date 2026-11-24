@@ -46,7 +46,17 @@ Very basic with minimal styling. The focus is on speed, functionality and clarit
 ## Validation
 For one location and one day, read the raw hourly forecast numbers the app downloaded, apply your thresholds by hand, and confirm the app gave the same rating. Also compare the app's forecast to the National Weather Service forecast for the same place.
 
-[Note - (Record the test location, date, units, thresholds, and expected hourly results so validation is repeatable. Treat the National Weather Service comparison as a reasonableness check because providers may use different forecast models and update times.)]
+|Activity|Limit|
+|--------|-----|
+|Crane|Wind speed < 3 mph|
+|Concrete|Temperature < 49|
+|Roofing|Chance of rain > 20%|
+
+Hazard times for sat nov 28 with validation data:
+9am - roofing and crane, concrete
+10am - roofing, concrete
+11am - roofing
+2pm - crane
 
 ## Out of scope
 
