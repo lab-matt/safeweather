@@ -30,6 +30,8 @@
     <details>
       <summary>Settings</summary>
       <div class="settings">
+        <label>Work starts <input id="work-start" type="time" value="00:00"></label>
+        <label>Work ends <input id="work-end" type="time" value="00:00"></label>
         <p>Safety limits will be defined later.</p>
         <label>Crane wind speed <input type="number" disabled></label>
         <label>Minimum chance of rain <input type="number" disabled></label>
@@ -40,11 +42,7 @@
   <main>
     <h2>Hourly forecast</h2>
     <p>Saved test forecast for Provo, Utah · November 23–29, 2026 · America/Denver</p>
-    <div>
-      <label>Work starts <input id="work-start" type="time" value="00:00"></label>
-      <label>Work ends <input id="work-end" type="time" value="00:00"></label>
-      <p>Times are local to the forecast. The end time is excluded; matching times show all 24 hours.</p>
-    </div>
+    <label>Forecast day <select id="forecast-day"></select></label>
     <p id="forecast-status" role="status">Loading saved test data…</p>
     <div class="hours" id="hours" tabindex="0" role="region" aria-label="Hourly forecast; scroll horizontally"></div>
   </main>
@@ -58,6 +56,13 @@
         const row = document.getElementById('hours');
         const start = document.getElementById('work-start');
         const end = document.getElementById('work-end');
+        const daySelect = document.getElementById('forecast-day');
+        [...new Set(data.hourly.time.map(time => time.slice(0, 10)))].forEach(date => {
+          const option = document.createElement('option');
+          option.value = date;
+          option.textContent = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(new Date(date + 'T12:00:00Z'));
+          daySelect.appendChild(option);
+        });
         function render() {
         row.replaceChildren();
         if (!start.value || !end.value) {
@@ -66,28 +71,30 @@
         }
         let count = 0;
         data.hourly.time.forEach((time, i) => {
+          if (time.slice(0, 10) !== daySelect.value) return;
           const hour = time.slice(11, 16);
           const included = start.value === end.value || (start.value < end.value ? hour >= start.value && hour < end.value : hour >= start.value || hour < end.value);
           if (!included) return;
           count++;
-          const date = new Date(time.slice(0, 10) + 'T12:00:00Z');
-          const day = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'UTC' }).format(date);
           const card = document.createElement('article');
           card.className = 'hour';
           const value = (key, unit) => data.hourly[key]?.[i] == null ? 'Unavailable' : `${data.hourly[key][i]} ${unit}`;
           const hourNumber = Number(hour.slice(0, 2));
           const displayTime = `${hourNumber % 12 || 12}:${hour.slice(3)} ${hourNumber < 12 ? 'AM' : 'PM'}`;
-          [ `${day} ${time.slice(0, 10)}`, displayTime, `Temperature: ${value('temperature_2m', '°C')}`, `Rain chance: ${value('precipitation_probability', '%')}`, `Wind: ${value('wind_speed_10m', 'km/h')}` ].forEach(text => {
+          const temperature = data.hourly.temperature_2m?.[i];
+          const wind = data.hourly.wind_speed_10m?.[i];
+          [ displayTime, `Temp: ${temperature == null ? 'Unavailable' : `${Math.round(temperature * 9 / 5 + 32)} °F`}`, `Rain chance: ${value('precipitation_probability', '%')}`, `Wind: ${wind == null ? 'Unavailable' : `${Math.round(wind * 0.621371)} mph`}` ].forEach(text => {
             const line = document.createElement('p');
             line.textContent = text;
             card.appendChild(line);
           });
           row.appendChild(card);
         });
-        status.textContent = `${count} saved hourly readings match the work hours. Scroll horizontally to see more.`;
+        status.textContent = count ? '' : 'No hourly readings match the selected work hours.';
         }
         start.addEventListener('input', render);
         end.addEventListener('input', render);
+        daySelect.addEventListener('change', render);
         render();
       } catch (error) {
         status.textContent = 'Could not load the saved test data. Open the page through a local web server or GitHub Pages.';
