@@ -13,4 +13,5 @@ Add a short `README.md` in each numbered folder describing its contents. Do not 
 
 ## Request log instruction
 
-After each request, add an entry to `prompts.md` describing what was asked, what changed, and whether it worked.
+-After each request, add an entry to `prompts.md` describing what was asked, what changed, and whether it worked.
+- After significant changes to the app, add a reminder to the end of a chat to git commit like "DO NOT FORGET TO COMMIT CHANGES TO GITHUB".

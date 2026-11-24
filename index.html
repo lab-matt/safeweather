@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Safeweather</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: sans-serif; }
+    header { position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; gap: 1rem; padding: 1rem; background: white; border-bottom: 1px solid #aaa; }
+    header h1 { margin: 0; font-size: 1.25rem; }
+    .location { text-align: center; }
+    details { position: relative; justify-self: end; }
+    summary { cursor: pointer; }
+    .settings { position: absolute; right: 0; width: 18rem; max-width: 90vw; padding: 1rem; background: white; border: 1px solid #aaa; }
+    .settings p { margin: 0 0 .75rem; }
+    .settings label { display: block; margin-top: .75rem; }
+    .settings input { display: block; width: 100%; margin-top: .25rem; }
+    main { padding: 1rem; }
+    @media (max-width: 480px) { header { grid-template-columns: 1fr auto; } .location { grid-column: 1 / -1; grid-row: 2; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Safeweather</h1>
+    <div class="location" id="location">Location not selected</div>
+    <details>
+      <summary>Settings</summary>
+      <div class="settings">
+        <p>Safety limits will be defined later.</p>
+        <label>Crane wind speed <input type="number" disabled></label>
+        <label>Minimum chance of rain <input type="number" disabled></label>
+        <label>Minimum temperature for concrete <input type="number" disabled></label>
+      </div>
+    </details>
+  </header>
+  <main></main>
+</body>
+</html>
