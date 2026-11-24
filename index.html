@@ -17,6 +17,9 @@
     .settings label { display: block; margin-top: .75rem; }
     .settings input { display: block; width: 100%; margin-top: .25rem; }
     main { padding: 1rem; }
+    .hours { display: flex; gap: .75rem; overflow-x: scroll; padding-bottom: 1rem; }
+    .hour { flex: 0 0 10rem; border: 1px solid #aaa; border-radius: 1.5rem; padding: 1rem; }
+    .hour p { margin: .75rem 0; }
     @media (max-width: 480px) { header { grid-template-columns: 1fr auto; } .location { grid-column: 1 / -1; grid-row: 2; } }
   </style>
 </head>
@@ -34,6 +37,63 @@
       </div>
     </details>
   </header>
-  <main></main>
+  <main>
+    <h2>Hourly forecast</h2>
+    <p>Saved test forecast for Provo, Utah · November 23–29, 2026 · America/Denver</p>
+    <div>
+      <label>Work starts <input id="work-start" type="time" value="00:00"></label>
+      <label>Work ends <input id="work-end" type="time" value="00:00"></label>
+      <p>Times are local to the forecast. The end time is excluded; matching times show all 24 hours.</p>
+    </div>
+    <p id="forecast-status" role="status">Loading saved test data…</p>
+    <div class="hours" id="hours" tabindex="0" role="region" aria-label="Hourly forecast; scroll horizontally"></div>
+  </main>
+  <script>
+    async function showForecast() {
+      const status = document.getElementById('forecast-status');
+      try {
+        const response = await fetch('02_validation/open_meteo_provo_84606_2026-11-23.json');
+        if (!response.ok) throw new Error('Unable to load data');
+        const data = await response.json();
+        const row = document.getElementById('hours');
+        const start = document.getElementById('work-start');
+        const end = document.getElementById('work-end');
+        function render() {
+        row.replaceChildren();
+        if (!start.value || !end.value) {
+          status.textContent = 'Choose both a start and an end time.';
+          return;
+        }
+        let count = 0;
+        data.hourly.time.forEach((time, i) => {
+          const hour = time.slice(11, 16);
+          const included = start.value === end.value || (start.value < end.value ? hour >= start.value && hour < end.value : hour >= start.value || hour < end.value);
+          if (!included) return;
+          count++;
+          const date = new Date(time.slice(0, 10) + 'T12:00:00Z');
+          const day = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'UTC' }).format(date);
+          const card = document.createElement('article');
+          card.className = 'hour';
+          const value = (key, unit) => data.hourly[key]?.[i] == null ? 'Unavailable' : `${data.hourly[key][i]} ${unit}`;
+          const hourNumber = Number(hour.slice(0, 2));
+          const displayTime = `${hourNumber % 12 || 12}:${hour.slice(3)} ${hourNumber < 12 ? 'AM' : 'PM'}`;
+          [ `${day} ${time.slice(0, 10)}`, displayTime, `Temperature: ${value('temperature_2m', '°C')}`, `Rain chance: ${value('precipitation_probability', '%')}`, `Wind: ${value('wind_speed_10m', 'km/h')}` ].forEach(text => {
+            const line = document.createElement('p');
+            line.textContent = text;
+            card.appendChild(line);
+          });
+          row.appendChild(card);
+        });
+        status.textContent = `${count} saved hourly readings match the work hours. Scroll horizontally to see more.`;
+        }
+        start.addEventListener('input', render);
+        end.addEventListener('input', render);
+        render();
+      } catch (error) {
+        status.textContent = 'Could not load the saved test data. Open the page through a local web server or GitHub Pages.';
+      }
+    }
+    showForecast();
+  </script>
 </body>
 </html>
